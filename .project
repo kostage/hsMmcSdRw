@@ -87,14 +87,14 @@
 			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/xmodem/crc16.c</locationURI>
 		</link>
 		<link>
-			<name>fat_mmcsd.c</name>
+			<name>diskio.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs/port/fat_mmcsd.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs_r011/src/diskio.c</locationURI>
 		</link>
 		<link>
 			<name>ff.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs/src/ff.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs_r011/src/ff.c</locationURI>
 		</link>
 		<link>
 			<name>xmodem.c</name>

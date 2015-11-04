@@ -40,7 +40,7 @@
 									<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include/armv7a&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/mmcsdlib/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/third_party/fatfs/src&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/third_party/fatfs_r011/src&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include/hw&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include/armv7a/am335x&quot;"/>

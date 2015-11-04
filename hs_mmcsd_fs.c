@@ -175,19 +175,25 @@ printing to the console.
 tFresultString g_sFresultStrings[] =
 {
     FRESULT_ENTRY(FR_OK),
+    FRESULT_ENTRY(FR_DISK_ERR),
+    FRESULT_ENTRY(FR_INT_ERR),
     FRESULT_ENTRY(FR_NOT_READY),
     FRESULT_ENTRY(FR_NO_FILE),
     FRESULT_ENTRY(FR_NO_PATH),
     FRESULT_ENTRY(FR_INVALID_NAME),
-    FRESULT_ENTRY(FR_INVALID_DRIVE),
     FRESULT_ENTRY(FR_DENIED),
     FRESULT_ENTRY(FR_EXIST),
-    FRESULT_ENTRY(FR_RW_ERROR),
+    FRESULT_ENTRY(FR_INVALID_OBJECT),
     FRESULT_ENTRY(FR_WRITE_PROTECTED),
+    FRESULT_ENTRY(FR_INVALID_DRIVE),
     FRESULT_ENTRY(FR_NOT_ENABLED),
     FRESULT_ENTRY(FR_NO_FILESYSTEM),
-    FRESULT_ENTRY(FR_INVALID_OBJECT),
-    FRESULT_ENTRY(FR_MKFS_ABORTED)
+    FRESULT_ENTRY(FR_MKFS_ABORTED),
+    FRESULT_ENTRY(FR_TIMEOUT),
+    FRESULT_ENTRY(FR_LOCKED),
+    FRESULT_ENTRY(FR_NOT_ENOUGH_CORE),
+    FRESULT_ENTRY(FR_TOO_MANY_OPEN_FILES),
+    FRESULT_ENTRY(FR_INVALID_PARAMETER),
 };
 
 /*****************************************************************************
@@ -688,7 +694,7 @@ Cmd_ls(int argc, char *argv[])
     ** Display the amount of free space that was calculated.
     */
     ConsoleUtilsPrintf(", %10uK bytes free\n",
-                       ulTotalSize * pFatFs->sects_clust / 2);
+                       ulTotalSize * pFatFs->csize / 2);
 
     /*
     ** Made it to here, return with no errors.
@@ -980,8 +986,8 @@ Cmd_cat(int argc, char *argv[])
 {
     FRESULT fresultRead = FR_NOT_READY;
     FRESULT fresultWrite = FR_NOT_READY;
-    unsigned short usBytesRead = 0;
-    unsigned short bytesWrite = 0;
+    unsigned int usBytesRead = 0; //поправил на int для посл версии Fatfs
+    unsigned int bytesWrite = 0; //поправил на int для посл версии Fatfs
     unsigned short bytesCnt = 0;
     unsigned short totalBytesCnt = 0;
     unsigned int flagWrite = 0;
@@ -1444,7 +1450,7 @@ void HSMMCSDFsMount(unsigned int driveNum, void *ptr)
     strcpy(g_cCmdBuf, "\0");
     g_sPState = 0;
     g_sCState = 0;
-    f_mount(driveNum, &g_sFatFs);
+    f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
     fat_devices[driveNum].dev = ptr;
     fat_devices[driveNum].fs = &g_sFatFs;
     fat_devices[driveNum].initDone = 0;
