@@ -39,7 +39,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_5.1.compilerID.INCLUDE_PATH.704769812" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_5.1.compilerID.INCLUDE_PATH" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include/armv7a&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/mmcsdlib/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../../emmcsdlib/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/third_party/fatfs_r011/src&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../../../starterwarefree-code/include/hw&quot;"/>
@@ -68,7 +68,7 @@
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/../../starterwarefree-code/binary/armv7a/cgt_ccs/am335x/system_config/${ConfigName}/system.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/../../starterwarefree-code/binary/armv7a/cgt_ccs/am335x/beaglebone/platform/${ConfigName}/platform.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/../../starterwarefree-code/binary/armv7a/cgt_ccs/utils/${ConfigName}/utils.lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/../../starterwarefree-code/binary/armv7a/cgt_ccs/mmcsdlib/${ConfigName}/libmmcsd.lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/../emmcsdlib/${ConfigName}/libemmcsd.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;rtsv7A8_A_le_n_eabi.lib&quot;"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_5.1.linkerID.SEARCH_PATH.1223275053" name="Add &lt;dir&gt; to library search path (--search_path, -i)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_5.1.linkerID.SEARCH_PATH" valueType="libPaths">

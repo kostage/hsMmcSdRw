@@ -271,7 +271,7 @@ extern mmcsdCardInfo sdCard;
 /* SD Controller info structure */
 extern mmcsdCtrlInfo  ctrlInfo;
 
-extern unsigned int HSMMCSDCardPresent(mmcsdCtrlInfo *ctrl);
+//extern unsigned int HSMMCSDIsCardInserted(mmcsdCtrlInfo *ctrl);
 
 extern int xmodemReceive(unsigned char *dest, int destsz);
 
@@ -301,7 +301,7 @@ ReadLine(void)
         /*
         ** Attempt to open the directory.
         */
-        if((HSMMCSDCardPresent(&ctrlInfo)) == 1)
+        if((ctrlInfo.cardPresent(&ctrlInfo)) == 1)
         {
             if(g_sCState == 0)
             {
