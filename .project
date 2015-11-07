@@ -87,11 +87,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/xmodem/crc16.c</locationURI>
 		</link>
 		<link>
-			<name>diskio.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs_r011/src/diskio.c</locationURI>
-		</link>
-		<link>
 			<name>ff.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/starterwarefree-code/third_party/fatfs_r011/src/ff.c</locationURI>
