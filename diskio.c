@@ -164,9 +164,30 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-//	DRESULT res;
-//	int result;
+	DRESULT res = RES_ERROR;
+	if (pdrv == DRIVE_NUM_MMCSD)
+	{
+		mmcsdCardInfo *card = fat_devices[pdrv].dev;
+    	switch (cmd)
+    	{
+    		case GET_SECTOR_COUNT:
+				*(unsigned int*)(buff) = card->nBlks;
+				res = RES_OK;
+			break;
 
-	return RES_OK;//RES_PARERR
+    		case GET_BLOCK_SIZE:
+    			*(unsigned int*)(buff) = 1;//õç
+    			res = RES_OK;
+    		break;
+
+    		case CTRL_SYNC:
+    			res = RES_OK;
+
+    		default:
+    		break;
+    	}
+	}
+
+    return res;
 }
 #endif

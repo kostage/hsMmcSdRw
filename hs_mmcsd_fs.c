@@ -82,7 +82,7 @@ including the file name, and a trailing null character.
 #define PATH_BUF_SIZE   512
 
 /* Defines size of the buffers that hold temporary data. */
-#define DATA_BUF_SIZE   64 * (2 * 512)
+#define DATA_BUF_SIZE   512 * (2 * 512)
 /*****************************************************************************
 Defines the size of the buffer that holds the command line.
 ******************************************************************************/
@@ -97,6 +97,8 @@ Defines the help message for cat.
 #define HELP_WR_UART "       Write from UART : cat dev.UART > <OUTPUTFILE>"
 #define HELP_CAT HELP_RD_FL HELP_WR_FL HELP_RD_UART HELP_WR_UART
 
+#define SFD 1
+#define FDISK 0
 /*****************************************************************************
 Current FAT fs state.
 ******************************************************************************/
@@ -243,7 +245,7 @@ static char g_cDataBuf[DATA_BUF_SIZE];
 
 #elif defined(__TMS470__)
 #pragma DATA_ALIGN(g_cDataBuf, SOC_CACHELINE_SIZE);
-static char g_cDataBuf[DATA_BUF_SIZE];
+static unsigned char g_cDataBuf[DATA_BUF_SIZE];
 
 #elif defined(gcc)
 static char g_cDataBuf[DATA_BUF_SIZE]
@@ -274,6 +276,7 @@ extern mmcsdCtrlInfo  ctrlInfo;
 //extern unsigned int HSMMCSDIsCardInserted(mmcsdCtrlInfo *ctrl);
 
 extern int xmodemReceive(unsigned char *dest, int destsz);
+extern int xmodemTransmit(unsigned char *src, int srcsz);
 
 /*******************************************************************************
 **
@@ -988,8 +991,8 @@ Cmd_cat(int argc, char *argv[])
     FRESULT fresultWrite = FR_NOT_READY;
     unsigned int usBytesRead = 0; //поправил на int для посл версии Fatfs
     unsigned int bytesWrite = 0; //поправил на int для посл версии Fatfs
-    unsigned short bytesCnt = 0;
-    unsigned short totalBytesCnt = 0;
+//    unsigned short bytesCnt = 0;
+//    unsigned short totalBytesCnt = 0;
     unsigned int flagWrite = 0;
     unsigned int flagRead = 0;
 #ifdef MMCSD_PERF
@@ -1053,6 +1056,10 @@ Cmd_cat(int argc, char *argv[])
 
     if(!strcmp(g_cDataBuf, "dev.UART"))
     {
+        if(flagWrite)
+        {
+//            unsigned int iter = 1;
+
         ConsoleUtilsPrintf("\nPlease provide text file (Max of ");
         ConsoleUtilsPrintf("%d Kbytes):\n", (DATA_BUF_SIZE / (2* 512)));
 
@@ -1064,20 +1071,7 @@ Cmd_cat(int argc, char *argv[])
             return(usBytesRead);
         }
 
-        if(flagWrite)
-        {
-            unsigned int iter = 0;
-
-            ConsoleUtilsPrintf("\n No. of iterations: ");
-            ConsoleUtilsScanf("%d \n", &iter);
-
-            if(0 >= iter)
-            {
-                ConsoleUtilsPrintf("\nERROR: Invalid entry!!\n");
-                return(iter);
-            }
-
-            /*
+           /*
             ** Open file for writing.
             */
             if(flagWrite)
@@ -1107,9 +1101,8 @@ Cmd_cat(int argc, char *argv[])
 #endif
 
                 fresultWrite = f_write(&fileObjectWrite,
-                                       (g_cDataBuf + bytesCnt),
-                                       (((usBytesRead - bytesCnt) >= DATA_BUF_SIZE) ?
-                                         DATA_BUF_SIZE : (usBytesRead - bytesCnt)),
+                                       g_cDataBuf,
+									   usBytesRead,
                                        &bytesWrite);
 
 #ifdef MMCSD_PERF
@@ -1126,27 +1119,74 @@ Cmd_cat(int argc, char *argv[])
                     ConsoleUtilsPrintf("\n");
                     return(fresultWrite);
                 }
+                ConsoleUtilsPrintf("\n%d Kbytes written:\n", bytesWrite);
 
-                bytesCnt += bytesWrite;
-
-                if(!(bytesCnt % usBytesRead) && (bytesCnt != 0))
-                {
-                    iter--;
-                    totalBytesCnt += bytesCnt;
-                    bytesCnt = 0;
-                }
             }
-            while(iter > 0);
+            while(0);
+
         }
 
         if(!flagWrite)
-        {
-            g_cDataBuf[usBytesRead-1] = 0;
+        { //локально открываем-закрываем файл не трогаем остальной код
 
-            /*
-            ** Print the last chunk of the file that was received.
-            */
-            ConsoleUtilsPrintf("%s", g_cDataBuf);
+            if (argc == 3)
+            {
+            	flagRead = 1;
+				/*
+				** Now finally, append the file name to result in fully specified file.
+				*/
+				strcat(g_cTmpBuf, argv[2]);
+
+				/*
+				** Open the file for reading.
+				*/
+				fresultRead = f_open(&g_sFileObject, g_cTmpBuf, FA_READ);
+
+				if(fresultRead != FR_OK)
+				{
+					return(fresultRead);
+				}
+				/*
+				 ** Read a block of data from the file.  Read as much as can fit in
+				 ** temporary buffer, including a space for the trailing null.
+				 */
+				 fresultRead = f_read(&g_sFileObject, g_cDataBuf,
+									  sizeof(g_cDataBuf) - 1, &usBytesRead);
+
+				 /*
+				 ** If there was an error reading, then print a newline and return
+				 ** error to the user.
+				 */
+				 if(fresultRead != FR_OK)
+				 {
+					 ConsoleUtilsPrintf("\n");
+					 return(fresultRead);
+				 }
+
+				 if (xmodemTransmit(g_cDataBuf, usBytesRead) < usBytesRead)
+				 {
+					 ConsoleUtilsPrintf("\nXmodem send error\n");
+					 return(-1);
+				 }
+
+            }
+            else
+            {
+            	if (MMCSDReadCmdSend(&ctrlInfo, g_cDataBuf, 0,
+            	                              1) != 1)
+            	{
+					 ConsoleUtilsPrintf("Failed to read 1st 512 Bytes\n");
+
+            	}
+				 ConsoleUtilsPrintf("\nXmodem send 1st 512 Bytes\n");
+
+				 if (xmodemTransmit(g_cDataBuf, 512) < 512)
+				 {
+					 ConsoleUtilsPrintf("\nXmodem send error\n");
+					 return(-1);
+				 }
+
+            }
         }
     }
     /*
@@ -1271,8 +1311,7 @@ Cmd_cat(int argc, char *argv[])
                 ** Null terminate the last block that was read to make it a null
                 ** terminated string that can be used with printf.
                 */
-                g_cDataBuf[usBytesRead] = 0;
-
+                g_cDataBuf[usBytesRead] = '\0';
                 /*
                 ** Print the last chunk of the file that was received.
                 */
@@ -1286,6 +1325,7 @@ Cmd_cat(int argc, char *argv[])
         }
         while(usBytesRead == sizeof(g_cDataBuf) - 1);
     }
+
 
 #ifdef MMCSD_PERF
         /*
@@ -1442,14 +1482,43 @@ Cmd_help(int argc, char *argv[])
     return(0);
 }
 
+/*******************************************************************************
+**
+** This function implements the "f_mkfs" command.
+**
+*******************************************************************************/
+int
+Cmd_mkfs(int argc, char *argv[])
+{
+    FRESULT fresult;
+    g_sPState = 0;
+    g_sCState = 0;
+
+    strcpy(g_cCwdBuf, "/");
+    strcpy(g_cCmdBuf, "\0");
+
+    fresult = f_mkfs (
+    		g_cCwdBuf,  /* [IN] Logical drive number */
+      FDISK,          	/* [IN] Partitioning rule */
+      128            	/* [IN] Size of the allocation unit */
+    );
+
+   fat_devices[0].initDone = 1;
+   f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
+    /*
+    ** Return success.
+    */
+    return fresult;
+}
+
 
 
 void HSMMCSDFsMount(unsigned int driveNum, void *ptr)
 {
-    strcpy(g_cCwdBuf, "/");
-    strcpy(g_cCmdBuf, "\0");
     g_sPState = 0;
     g_sCState = 0;
+    strcpy(g_cCwdBuf, "/");
+    strcpy(g_cCmdBuf, "\0");
     f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
     fat_devices[driveNum].dev = ptr;
     fat_devices[driveNum].fs = &g_sFatFs;
@@ -1474,6 +1543,7 @@ tCmdLineEntry g_sCmdTable[] =
     { "pwd",    Cmd_pwd,      "  : Show current working directory" },
     { "cat",    Cmd_cat,      HELP_CAT },
     { "rm",     Cmd_rm,      "   : Delete a file or an empty directory" },
+	{ "mkfs",     Cmd_mkfs,      "   : Format to one partition" },
     { 0, 0, 0 }
 };
 

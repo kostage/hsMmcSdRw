@@ -783,7 +783,7 @@ int main(void)
     volatile unsigned int initFlg = 1;
 
     /* Setup the MMU and do necessary MMU configurations. */
-    MMUConfigAndEnable();
+//    MMUConfigAndEnable();
 
     /* Enable all levels of CACHE. */
     CacheEnable(CACHE_ALL);
