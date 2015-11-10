@@ -1487,24 +1487,43 @@ Cmd_help(int argc, char *argv[])
 ** This function implements the "f_mkfs" command.
 **
 *******************************************************************************/
+
+/* Initialize a brand-new disk drive mapped to physical drive 0 */
+
 int
 Cmd_mkfs(int argc, char *argv[])
 {
     FRESULT fresult;
+    DWORD plist[] = {100, 0, 0, 0};  /* Divide drive into one partitions */
     g_sPState = 0;
     g_sCState = 0;
 
-    strcpy(g_cCwdBuf, "/");
+    strcpy(g_cCwdBuf, "0:/");
     strcpy(g_cCmdBuf, "\0");
 
-    fresult = f_mkfs (
-    		g_cCwdBuf,  /* [IN] Logical drive number */
-      FDISK,          	/* [IN] Partitioning rule */
-      128            	/* [IN] Size of the allocation unit */
-    );
+    if ((fresult = f_fdisk(0, plist, g_cDataBuf)) != FR_OK)    /* Divide physical drive 0 */
+    {
+    	ConsoleUtilsPrintf("\nDisk partitioning failed\n");
+    	return fresult;
+    }
+	ConsoleUtilsPrintf("\nDisk partitioning success\n");
 
-   fat_devices[0].initDone = 1;
-   f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
+    if ((fresult = f_mount(&g_sFatFs, g_cCwdBuf, 0)) != FR_OK)    /* Mount FAT volume on the logical drive 0. 2nd argument is ignored. */
+    {
+       	ConsoleUtilsPrintf("\nMounting FAT partition failed\n");
+      	return fresult;
+    }
+   	ConsoleUtilsPrintf("\nMounting FAT partition success\n");
+
+    if ((fresult = f_mkfs(g_cCwdBuf, 0, 128)) != FR_OK)    /* Create FAT volume on the logical drive 0. 2nd argument is ignored. */
+    {
+    	ConsoleUtilsPrintf("\nCreating FAT partition failed\n");
+    	return fresult;
+
+    }
+	ConsoleUtilsPrintf("\nCreating FAT partition success\n");
+
+
     /*
     ** Return success.
     */
@@ -1515,14 +1534,21 @@ Cmd_mkfs(int argc, char *argv[])
 
 void HSMMCSDFsMount(unsigned int driveNum, void *ptr)
 {
-    g_sPState = 0;
+	g_sPState = 0;
     g_sCState = 0;
-    strcpy(g_cCwdBuf, "/");
+
+    strcpy(g_cCwdBuf, "0:/");
     strcpy(g_cCmdBuf, "\0");
-    f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
     fat_devices[driveNum].dev = ptr;
     fat_devices[driveNum].fs = &g_sFatFs;
     fat_devices[driveNum].initDone = 0;
+    if (f_mount(&g_sFatFs, g_cCwdBuf, 1) != FR_OK) {
+       	ConsoleUtilsPrintf("\nMounting FAT partition failed\n");
+    	if (Cmd_mkfs(0,0) != FR_OK) {
+    		ConsoleUtilsPrintf("\nUnable to mount or create FAT partition - go idle\n");
+    		while(1);
+    	}
+    }
 }
 
 /*******************************************************************************

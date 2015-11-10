@@ -14,7 +14,9 @@
 #include "ff.h"
 #include "uartStdio.h"
 
-
+ PARTITION VolToPart[] = {
+        {0, 1}    /* Logical drive 0 ==> Physical drive 0, 1st partition */
+    };
 typedef struct _fatDevice
 {
     /* Pointer to underlying device/controller */
