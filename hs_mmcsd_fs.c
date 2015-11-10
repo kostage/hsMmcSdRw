@@ -1497,16 +1497,23 @@ Cmd_mkfs(int argc, char *argv[])
     strcpy(g_cCwdBuf, "/");
     strcpy(g_cCmdBuf, "\0");
 
+   f_mount(&g_sFatFs, g_cCwdBuf, 0);
+
     fresult = f_mkfs (
     		g_cCwdBuf,  /* [IN] Logical drive number */
-      FDISK,          	/* [IN] Partitioning rule */
+      SFD,          	/* [IN] Partitioning rule */
       128            	/* [IN] Size of the allocation unit */
     );
+    if (fresult != FR_OK) return fresult;
 
-   fat_devices[0].initDone = 1;
-   f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
+//    MMCSDReadCmdSend(&ctrlInfo, g_cDataBuf, 0, 1);
+//    g_cDataBuf[0x10] = 2;
+//    MMCSDWriteCmdSend(&ctrlInfo, g_cDataBuf, 0, 1);
+
+    fresult = f_mount(&g_sFatFs, g_cCwdBuf, 1);
+
     /*
-    ** Return success.
+    ** Return fresult.
     */
     return fresult;
 }
@@ -1519,10 +1526,17 @@ void HSMMCSDFsMount(unsigned int driveNum, void *ptr)
     g_sCState = 0;
     strcpy(g_cCwdBuf, "/");
     strcpy(g_cCmdBuf, "\0");
-    f_mount(&g_sFatFs, g_cCwdBuf, 0); //отложенный mount
     fat_devices[driveNum].dev = ptr;
     fat_devices[driveNum].fs = &g_sFatFs;
     fat_devices[driveNum].initDone = 0;
+    if (f_mount(&g_sFatFs, g_cCwdBuf, 1) != FR_OK) {
+       	ConsoleUtilsPrintf("\nMounting FAT partition failed\n");
+       	ConsoleUtilsPrintf("\nCreating FAT partition...\n");
+    	if (Cmd_mkfs(0,0) != FR_OK) {
+    		ConsoleUtilsPrintf("\nUnable to mount or create FAT partition - go idle\n");
+    		while(1);
+    	}
+    }
 }
 
 /*******************************************************************************
