@@ -69,7 +69,9 @@
 
 MEMORY
 {
-        DDR_MEM        : org = 0x80000000  len = 0x7FFFFFF           /* RAM */
+        DDR_MEM        : org = 0x80000000  len = 0x001FFFF           /* RAM */
+        DDR_MEM_BSS        : org = 0x8001FFFF  len = 0x7FFFFFF           /* RAM */
+
 }
 
 /* SPECIFY THE SECTIONS ALLOCATION INTO MEMORY */
@@ -77,14 +79,13 @@ MEMORY
 SECTIONS
 {
     .text:Entry : load > 0x80000000
-
     .text    : load > DDR_MEM              /* CODE                          */
     .data    : load > DDR_MEM              /* INITIALIZED GLOBAL AND STATIC VARIABLES */
-    .bss     : load > DDR_MEM              /* UNINITIALIZED OR ZERO INITIALIZED */
+    .const   : load > DDR_MEM              /* GLOBAL CONSTANTS              */
+    .bss     : load > DDR_MEM_BSS              /* UNINITIALIZED OR ZERO INITIALIZED */
                                            /* GLOBAL & STATIC VARIABLES */
                     RUN_START(bss_start)
                     RUN_END(bss_end)
-    .const   : load > DDR_MEM              /* GLOBAL CONSTANTS              */
-    .stack   : load > DDR_MEM HIGH           /* SOFTWARE SYSTEM STACK         */
+    .stack   : load > DDR_MEM_BSS HIGH           /* SOFTWARE SYSTEM STACK         */
 }
 
